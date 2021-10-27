@@ -1,6 +1,6 @@
 ## Installation
 ```bash
-pip install git+
+pip install git+https://github.com/SimiPixel/mat2py.git
 ```
 
 ## Quickstart
