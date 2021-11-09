@@ -1,6 +1,8 @@
+from typing import Iterable
 from scipy.io import loadmat
 from pathlib import Path
 import numpy as np 
+from pympler.asizeof import asizeof 
 
 def load(mat):
     path = Path(mat)
@@ -15,7 +17,10 @@ class matlabFile(object):
             self._process_dict(data)
 
         elif isinstance(data, np.ndarray):
-            self._process_array(data)
+            if not isinstance(data.dtype.names, Iterable):
+                self._process_cell(data)
+            else:
+                self._process_array(data)
 
         else:
             raise Exception()
@@ -29,6 +34,15 @@ class matlabFile(object):
                 self.__setattr(key, matlabFile(data[key]))
         if not found_field:
             raise Exception()
+
+    def _process_cell(self, arr):
+        if not hasattr(self, "cell"):
+            self.cell = []
+
+        self.__attr.append("cell")
+
+        for i, cell in enumerate(arr):
+            self.cell.append(matlabFile(cell))
 
     def _process_array(self, arr):
 
@@ -76,6 +90,12 @@ class matlabFile(object):
     def items(self):
         return [item for item in self.__iter__()]
 
+    def sizeInKiloBytes(self):
+        return asizeof(self)/1024
+
+    def sizeInMegaBytes(self):
+        return asizeof(self)/1024/1024
+
     def pprint(self, lvl=0, return_str=False):
         s=""
         padding = lambda key, lvl: lvl*"--"+key+"\n"
@@ -84,6 +104,9 @@ class matlabFile(object):
             s += padding(key, lvl)
             if isinstance(self[key], np.ndarray):
                 s += padding("array",lvl+1)
+            elif isinstance(self[key], list):
+                for cell in self[key]:
+                    s += cell.pprint(lvl=lvl+1, return_str=True)
             else:
                 s += self[key].pprint(lvl=lvl+1, return_str=True)
 

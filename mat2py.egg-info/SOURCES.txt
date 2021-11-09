@@ -1,4 +1,6 @@
 setup.py
+mat2py/__init__.py
+mat2py/mat2py.py
 mat2py.egg-info/PKG-INFO
 mat2py.egg-info/SOURCES.txt
 mat2py.egg-info/dependency_links.txt
